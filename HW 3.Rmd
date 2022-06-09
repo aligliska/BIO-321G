@@ -1,0 +1,113 @@
+---
+title: "HW 3"
+author: "Alice Gee"
+date: "9/12/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+eulerIntegrate = function(f, x0, dt, tEnd) {
+  out = data.frame(
+    t = seq(from=0, to=tEnd, by=dt),
+    x = x0  
+  )
+  xNow = x0
+  for (step in 2:nrow(out)) {
+    dx = f(xNow) * dt
+    xNow = xNow + dx
+    out[step, "x"] = xNow
+  }
+  return(out)
+}
+```
+
+1. 
+```{r}
+fLogistic <- function(x, r, k){
+  r*x*(1-(x/k))
+}
+```
+
+2. The return values are 0.9, 2.5, and 0. 
+```{r}
+setParameters = function(f, parameters) {
+  fWithParametersFixed = function(x) { 
+    argumentsForF = c(x, parameters)
+    return(do.call(f, argumentsForF))
+  }
+  return(fWithParametersFixed)
+}
+pars = list(r=1, k=10)
+fParametrized = setParameters(fLogistic, pars)
+
+fParametrized(1)
+fParametrized(5)
+fParametrized(10)
+?do.call
+```
+3. The setParameters function is taking in the arguments f and parameters to run the input function f with the new set of conditions set by the internal fWithParametersFixed function. In this example in particular, setParameters establishes the x, r, and k values for the fLogistics function and returns the output of the function under these values.  
+
+4. An error message pops up saying the second argument for do.call, within the setParameters function, needs to be a list. 
+```{r}
+vecPars = c(r=1, k=10)
+#fParametrized2 = setParameters(fLogistic, vecPars)
+#fParametrized2(5)
+```
+
+5. fParametrized would be better suited to be used as the argument for f in eulerIntegrate because it contains the necessary arguments and paramenters for the function to run properly. fLogistics is missing arguments that would allow the function to run properly (since the conditions are not initialize or set like with fParametrized). 
+```{r}
+eulerIntegrate(fParametrized, x0 = 1, dt = 0.2, tEnd = 6)
+#eulerIntegrate(fLogistic, x0 = 1, dt = 0.2, tEnd = 6)
+```
+
+6. 
+```{r}
+eulerTraj <- eulerIntegrate(fParametrized, x0 = 1, dt = 0.2, tEnd = 6)
+library(ggplot2); theme_set(theme_bw())
+gg = ggplot(eulerTraj, aes(x=t, y=x)) + geom_point() + geom_line()
+print(gg)
+```
+
+7. 
+```{r}
+exactSolutionLogisticGrowth = function(r, k, x0) {
+  tStar = log((k / x0) - 1) / r
+  solution = function(t) {
+    k / (1 + exp(-r * (t-tStar)))
+  }
+  return(solution)
+}
+exactSol <- exactSolutionLogisticGrowth(r = 1, k = 10, x0 = 1)
+gg = gg + stat_function(fun = exactSol, color = "dodgerblue")
+print(gg)
+```
+
+8. The graph using the larger Euler method has a more chaotic pattern (if there is any pattern at all). With the smaller time units, the euler trajectory was similar to the logistic growth model. With the larger time units, the euler trajectory is dissimilar and shows distinct significant increases and decreases (e.g. oscillating patterns) in the x value as time proceeds.
+```{r}
+eulerTraj2 <- eulerIntegrate(fParametrized, x0 = 1, dt = 3, tEnd = 60)
+library(ggplot2); theme_set(theme_bw())
+gg2 = ggplot(eulerTraj2, aes(x=t, y=x)) + geom_point() + geom_line()
+print(gg2)
+```
+
+9. 
+  A. Equation 8 resembles the equation for the logistic map equation. 
+  B. The value of r-"tilde" is the discrete approximation of the continuous r value. Using the parameters r and dt, r-"tilde" is equal to (1 + r*dt).    
+  C. Assuming we keep the same r parameter equal to the r-"tilde" value (as r-"tilde" is the discrete approximation of r), the behavior of the equivalent discrete-time model should be relatively the same, irregardless of minor differences. 
+
+10. While the appearance of the logistics growth model appears to become more chaotic and oscillates between values, equation 10 points that the growth model isn't as chaotic and periodic as it appears to be. Equation 10 indicates the r-"tilde" changes in a determined way, not out of randomness. This is significant since this implies that the growth rates are influencing the growth models in a deterministic way, such that despite it's split/oscillating appearance, it is creating certain patterns. This greatly undermines the claim that the logistic model is chaotic, as there is clear patterns that can be extrapolated from the models. Moreover, at certain growth rates, the patterns are distinctly different that at some other growth rates, indicating that the apparant periodic nature of the logistics growth model is not necessarily periodic since the trends do not apply themselves consistently throughout the entirety of the model. 
+```{r}
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

@@ -1,0 +1,93 @@
+---
+title: "HW 5"
+author: "Alice Gee"
+date: "9/24/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+1.
+```{r}
+writeFasta <- function(s, m){
+  out <- c()
+  for ( i in 1:(length(s)) ){
+    combine_name <- paste0(">", names(s[i]))
+    if (nchar(s[i]) > m){
+      new_str = strsplit(s[i], split = "")[[1]]
+      temp = c(); temp2 = c()
+      for ( j in 1:length(new_str) ){
+        temp <- append(temp, new_str[j])
+        if ( (j %% 7 == 0) | (j == length(new_str)) ){
+          temp <- paste(temp, collapse = "")
+          temp2 <- append(temp2, temp)
+          temp = c()
+        }
+      }
+      temp2 <- paste(temp2, collapse = "\n")
+    } else {
+      temp2 = s[i]
+    } 
+    combine_name <- paste(combine_name, temp2, sep = "\n")
+    out <- append(out, combine_name)
+  }
+  out <- paste(out, collapse = "\n")
+  out <- paste0(out, "\n")
+  return(out)
+}
+```
+2. 
+```{r}
+seqs = c(
+  seq1 = "CATACT",
+  seq2 = "GGGGAAAGGGGAAAA"
+)
+
+fastaized = writeFasta(s=seqs, m=7)
+fastaized
+cat(fastaized)
+```
+
+3. 
+P(A & B) = P(A|B) * P(B)
+```{r}
+condProbs = rbind(
+  c(0.300, 0.205, 0.285, 0.210),
+  c(0.322, 0.298, 0.078, 0.302),
+  c(0.248, 0.246, 0.298, 0.208),
+  c(0.177, 0.239, 0.292, 0.292)
+)
+bases = c("A", "C", "G", "T")
+dimnames(condProbs) = list(b=bases, "b'"=bases)
+condProbs
+
+margProbs = Re(eigen(t(condProbs))$vectors[ , 1])
+margProbs = margProbs / sum(margProbs)
+names(margProbs) = colnames(condProbs)
+margProbs
+
+joint_probability = condProbs * margProbs
+joint_probability
+```
+
+4.
+```{r}
+sum(joint_probability)
+```
+
+5. The would be an expected 10000 CG nucleotides. 
+```{r}
+joint_probability[10] * 520525 #location 10 indicates joint_prob for CG
+```
+
+
+
+

@@ -1,0 +1,176 @@
+---
+title: "HW 1"
+author: "Alice Gee"
+date: "8/26/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+1) Combing with c
+  A. "character"
+  B. "character"
+  C. "list" 
+  D. "numeric" 
+  E. "list"
+  F. 8
+  G. 5
+  H. 4
+  I. 1, This is different from the answer in part H because 
+    [1] is refering for a single item in the vector. In part H, 
+    we are counting all the items in wal and one item from rus. 
+
+2) Hypotenuse 
+  hypotenuse = function (a, b) {
+  c = sqrt(a^2 + b^2)
+  return(c)
+  }
+  
+3) Overlapping intervals
+  A. 
+    overlap = function(g,h) {
+      if (g[1] > h[1] & g[1] < h[2]) {
+        return(TRUE)
+      } else if (h[1] > g[1] & h[1] < g[2]) {
+        return(TRUE)
+      } else if (g[1] == h[1]) {
+        return(TRUE)
+      } else {
+        return(FALSE)
+      }
+    }
+  B. TRUE, There is a between g and h since g[1] (200) is in 
+  the range of h[1] (100) and h[2] (250). There is an overlap 
+  of approximately 50. 
+  C. FALSE, The given intervals have no overlap. 
+  
+4. Fun with functions
+  4.1 Powers of f0
+    A. 5
+    B. 7
+    C. The function f1(2) takes 2 as the argument for x and
+    returns the function functionalPower(f0, y). The output would
+    essentially be f1(2) = 2 + y. 
+    D.`%op1%` = function(x, y) {f1(x)(y)} is an operator
+    defined function that takes in arguments x and y, and applies
+    them to the f1 function that was previously defined. x %op1% y 
+    represents a different method of calling f1(x)(y), in that it
+    also takes in the two arguments of x and y and adds them together.
+    x + y
+    
+  4.2 Powers of f1
+    A. 6
+    B. 12
+    C. The function f2(2) takes 2 as the argument for x and
+    returns the function functionalPower(f1(x), y-1). The output
+    of f2(2) = 2 * y, since the f2 function multiplies the x and 
+    y arguments together. 
+    D. `%op1%` = function(x, y) {f2(x)(y)} is an operator 
+    defined function that takes in arguemnts x and y, and applies them 
+    to the f2 function that was previously defined. x %op2% y 
+    represents a different method of calling f2(x)(y), in that it 
+    also takes in the two arguments of x and y and multiplies them
+    together. 
+    x * y 
+  
+  4.3 Powers of f2
+    A. 8
+    B. 81
+    C. The function f3(2) takes 2 as the argument for x and
+    returns the function functionalPower(f2(x), y-1). The output
+    of f3(2) = 2 ** y (or 2 ^ y). 
+    D. `%op1%` = function(x, y) {f3(x)(y)} is an operator 
+    defined function that takes in arguemnts x and y, and applies them 
+    to the f3 function that was previously defined. x %op2% y 
+    represents a different method of calling f3(x)(y), in that it 
+    also takes in the two arguments of x and y and raises x to the 
+    power of y. 
+    x ** y or x ^ y
+
+
+```{r}
+wal = c(c(1, 2, 3), "string")
+class(wal)
+class(wal[[1]])
+rus = c(list(1, 2, 3), "string")
+class(rus)
+class(rus[[1]])
+class(c(wal, rus))
+length(c(wal, rus))
+length(c(list(wal), rus))
+length(c(list(wal), rus)[[1]])
+length(c(list(wal), rus)[1])
+
+hypotenuse = function (a, b) {
+  c = sqrt(a^2 + b^2)
+  return(c)
+}
+hypotenuse(3, 4)
+
+overlap = function(g,h) {
+  if (g[1] > h[1] & g[1] < h[2]) {
+    return(TRUE)
+  } else if (h[1] > g[1] & h[1] < g[2]) {
+    return(TRUE)
+  } else if (g[1] == h[1]) {
+    return(TRUE)
+  } else {
+    return(FALSE)
+  }
+}
+
+overlap(g=c(200, 400), h=c(100, 250))
+overlap(c(500, 600), c(800, 900))
+
+f0 = function(x) {x +1}
+
+functionalPower = function(f, power) { 
+  fRepeatedPowerTimes = function(x) {
+    if (power == 0) {
+      return(x)
+    } else {
+      for (i in 1:power) {
+        x = f(x)
+      }
+    }
+    return(x)
+  }
+  return(fRepeatedPowerTimes)
+}
+
+f1 = function(x) {
+  return(function(y) {
+    f0_to_y = functionalPower(f0,y)
+    return(f0_to_y(x))
+  })
+}
+f1(2)(3)
+f1(3)(4)
+
+`%op1%` = function(x, y) {f1(x)(y)}
+2 %op1% 3
+
+f2 = function(x) {
+  return(function(y) {
+    f1ofx_to_yminus1 = functionalPower(f1(x), y-1)
+    return(f1ofx_to_yminus1(x))
+  })
+}
+
+f2(2)(3)
+f2(3)(4)
+
+f3 = function(x) {
+  return(function(y) {
+    f2ofx_to_yminus1 = functionalPower(f2(x), y-1)
+    return(f2ofx_to_yminus1(x))
+  })
+}
+f3(2)(3)
+f3(3)(4)
+      
+```
+

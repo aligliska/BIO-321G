@@ -1,0 +1,105 @@
+---
+title: "HW 4"
+author: "Alice Gee"
+date: "9/19/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+1. 
+```{r}
+fixedSizeStepper = function(nSteps){
+  sample(c(-1,+1), nSteps, replace = TRUE)
+}
+
+uniformStepper = function(nSteps){
+  sqrt(12) * (runif(nSteps)-1/2)
+}
+
+randomWalk = function(nSteps, stepper) {
+  steps = stepper(nSteps)
+  return(c(0,cumsum(steps)))
+}
+```
+2. 
+```{r}
+randomWalks = function(nSteps, stepper = fixedSizeStepper, nWalks = 100000) {
+  lapply(1:nWalks, function(i) {randomWalk(nSteps, stepper)})
+}
+
+fixedStepWalks <- randomWalks(nSteps = 100, stepper = fixedSizeStepper, nWalks = 100000)
+unifWalks <- randomWalks(nSteps = 100 , stepper = uniformStepper, nWalks = 100000)
+gaussianWalks <- randomWalks(nSteps = 100, stepper = rnorm, nWalks = 100000)
+```
+3. 
+```{r}
+positionsAtStepT = function(walks, t){
+  unlist(lapply(walks, function(rw) {rw[[t+1]]}))
+}
+
+edit_positionAtStepT = function(walks, t){
+  lapply(walks, function(rw) {rw[[t+1]]})
+}
+
+temp <- positionsAtStepT(fixedStepWalks, 5)
+head(temp)
+class(temp)
+temp2 <- edit_positionAtStepT(fixedStepWalks, 5)
+head(temp2)
+class(temp2)
+```
+  A. The class of the object returned by positionAtStepT is a numeric. 
+  B. Removing the unlist function returns the output of each value as an individual element in a list. 
+  C. We use [[t+1]] in the code instead of [[t]] because we want to check the positions of the walker through the last step that they take. By using [[t+1]], we get the positions after we take step t, not the position we are at before we take step t.     
+4. 
+```{r}
+plotData = lapply(c(1, 2, 5, 10), function(nSteps) {
+  rbind(
+    data.frame(stepper = "+/-1",      ## recycled
+               t = nSteps,            ## recycled
+               x = positionsAtStepT(fixedStepWalks, nSteps)),
+    data.frame(stepper = "uniform",   ## recycled
+               t = nSteps,            ## recycled
+               x = positionsAtStepT(unifWalks, nSteps)),
+    data.frame(stepper = "gaussian",  ## recycled
+               t = nSteps,            ## recycled
+               x = positionsAtStepT(gaussianWalks, nSteps))
+  )
+})
+class(plotData)
+length(plotData)
+plotData = do.call(rbind, plotData)
+class(plotData)
+nrow(plotData)
+ncol(plotData)
+```
+  A. The length of the first argument in lapply is 4. 
+  B. The comments "recycled" indicates that we are reusing the same values [of nSteps] for each of the types of randomWalks methods to get the positions. In general, the recycled comment indicates that we are reusing methods of values.
+  C. The class of plotData is a list. 
+  D. The length of plotData is 4. 
+  E. The class of plotData is now a data frame. 
+  F. There are 1200000 rows and 3 columns in plotData. 
+5. 
+```{r}
+library(ggplot2); theme_set(theme_bw())
+gg = ggplot(plotData, aes(x=x))
+## facet_grid splits the plot into a grid of panels (or facets)
+## based on two categorical variables---here stepper and t,
+## separated by a tilde (~)---with all data sharing the same
+## combination of one value of stepper and one value of t
+## plotted together in the appropriate facet of the grid:
+gg = gg + facet_grid(stepper ~ t, scales="free_x")
+## center=0 below tells histogram to center one of the bins on 0:
+gg = gg + geom_histogram(center=0, fill="darkgray", color="darkslategray")
+print(gg)
+```
+  A. Similar to fixedSizeStepper, uniformStepper and gaussianStepper both have a distribution similar to that of a normal distribution after many steps. For uniformStepper, we are picking a step size with uniform probability such that it yields a mean of 0 and a standard deviation of 1, which is similar to the sample distribution used in fixedSizeStepper. This results in a normal distribution type after many walks, in a similar nature to fixedSizeStepper. For guassianStepper, the function utilizes the built-in function in R that simulates a normal distribution with a [default] mean of 0 and a standard deviation of 1. These qualities allow the distribution to be consistently normal, regardless of the number of steps taken, which resembles the normal [approximated] distribution of fixedSizeStepper after many steps. 
+  B. fixedSizeStepper can be distinguished from the other two methods in that fixedSizeStepper returns integer values since each step is chosen from +1 or -1, both of which are integers. For unifWalks and gaussianWalks, they both yield floats (decimal numbers) because the step values are chosen from [usually] non-integer numbers. 
+```{r}
+tail(fixedStepWalks[[1]])
+tail(unifWalks[[1]])
+tail(gaussianWalks[[1]])
+```

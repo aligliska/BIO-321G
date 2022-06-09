@@ -1,0 +1,67 @@
+---
+title: "HW 8"
+author: "Alice Gee"
+date: "10/25/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+1. 
+```{r}
+library(seqinr)
+seqs = read.fasta("hw8-1.fa", seqtype="AA", as.string=FALSE)
+seqMat = do.call(rbind, seqs)
+## setdiff means set difference: return all unique elements from the first
+## (vector) argument which do NOT appear in the second (vector) argument:
+aas = setdiff(LETTERS, c("B", "J", "O", "U", "X", "Z"))
+names(aas) = aas
+
+aaPosCounts <- matrix(data = 0, nrow = 20, ncol = ncol(seqMat))
+for(j in 1:ncol(seqMat)){
+    for (i in 1:20){
+      aaPosCounts[i,j] = sum(seqMat[,j] == aas[i])
+        }
+      }
+
+rownames(aaPosCounts) = aas
+head(aaPosCounts)
+
+```
+
+2. 
+```{r}
+conservedPositions <- c()
+for (j in 1:ncol(aaPosCounts)){
+  if (any(aaPosCounts[,j] == 9)){
+    conservedPositions = c(conservedPositions,j)
+  }
+}
+conservedPositions
+```
+
+3. The length of seq1AsString is 107 characters long. 
+```{r}
+library(stringr)
+seq_temp <- paste(as.character(seqs[[1]]), collapse = "")
+seq_temp <- str_remove_all(seq_temp2, "-")
+seq1AsString = paste(seq_temp, collapse = "")
+nchar(seq1AsString)
+
+# not sure if we are allowed to use packages, but alt. solution: 
+seq_temp2 <- gsub("-", "", as.character(seqs[[1]]))
+seq1AsString2 <- paste(seq_temp2, collapse = "")
+nchar(seq1AsString2)
+```
+
+4. The description says: "thioredoxin [Danio rerio]". 
+
+

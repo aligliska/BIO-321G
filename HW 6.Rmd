@@ -1,0 +1,116 @@
+---
+title: "HW 6"
+author: "Alice Gee"
+date: "10/1/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+ecoliGenomeFile = "Escherichia_coli_str_k_12_substr_mg1655.ASM584v2.dna.toplevel.fa.gz"
+ecoliGenomeLink = paste0(
+  "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-48/",
+  "fasta/bacteria_0_collection/escherichia_coli_str_k_12_substr_mg1655/dna/",
+  ecoliGenomeFile
+)
+download.file(ecoliGenomeLink, ecoliGenomeFile)
+ecoliAnnotationFile = "Escherichia_coli_str_k_12_substr_mg1655.ASM584v2.46.gff3.gz"
+ecoliAnnotationLink = paste0(
+  "ftp://ftp.ensemblgenomes.org/pub/bacteria/release-48/",
+  "gff3/bacteria_0_collection/escherichia_coli_str_k_12_substr_mg1655/",
+  ecoliAnnotationFile
+  )
+download.file(ecoliAnnotationLink, ecoliAnnotationFile)
+
+source("suffix_array_binary_search_utils.R")
+```
+
+1. The fraction of the E. coli genome that is either C or G is  0.508. 
+```{r}
+library(seqinr)
+seqAsString = toupper(read.fasta(ecoliGenomeFile, as.string=TRUE)[[1]])
+seqAsString = paste0(seqAsString, "$")
+sa = as.integer(readLines("ecoli_suffix_array.txt.gz"))
+
+n_C <- length(findKmer("C", seqAsString, sa))
+n_G <- length(findKmer("G", seqAsString, sa))
+
+(n_C + n_G) / nchar(seqAsString)
+```
+
+2. 
+  a. The best match to sdPwm is "AGGAGG". 
+  b. The PWM probability score for this best match is 0.117649. 
+  c. There are approximately 19 kmers that would be a good match. 
+```{r}
+sdPwm = rbind(
+  c(0.7, 0.1, 0.1, 0.7, 0.1, 0.1),
+  c(0.1, 0.1, 0.1, 0.1, 0.1, 0.1),
+  c(0.1, 0.7, 0.7, 0.1, 0.7, 0.7),
+  c(0.1, 0.1, 0.1, 0.1, 0.1, 0.1)
+)
+rownames(sdPwm) = c("A", "C", "G", "T")
+
+bst_kmer <- bestKmer(sdPwm)
+bst_kmer
+pwmProbScore(sdPwm, bst_kmer)
+sdKmers <- enumerateKmers(
+  sdPwm, 
+  threshold = pwmProbScore(sdPwm, bst_kmer) / 10
+)
+length(sdKmers)
+```
+
+3. 
+  a. The length of length(hitsForward) is 19. 
+  b. The length of length(unlist(hitsForward)) is 13336. 
+```{r}
+hitsForward <- lapply(sdKmers, function(km) {findKmer(km, seqAsString, sa)})
+length(hitsForward)
+length(unlist(hitsForward))
+```
+  
+4. There are 2012 forward strands of genes. 
+```{r}
+source("load_ensembl_gff3.R")
+genes = loadEnsemblGff3(ecoliAnnotationFile)
+genesForward <- genes[genes$strand == "+",]
+nrow(genesForward)
+```
+
+5. The pattern shown in the scatterplot is consistent with the discussion. As seen in the plot, there are the most hits of the Shine-Dalgarno sequence 10 bases upstream of the start codon. Starting from 20 bases upstream of the start codon, there is an increase in hits as we approach the sequence location at approximately 20 bases upstream. This peak highlights the typical location for the Shine-Dalgarno sequence. In the wiki discussion, it mentions that the Shine-Dalgarno sequence should approximately 8 bases upstream of the start codon, which is generally near where we identified the location to be. 
+```{r}
+distToStart = -30:30  ## will look for Shine-Dalgarno hits from
+                      ## 30 bases upstream to 30 bases downstream
+                      ## of starts of genes on forward strand
+names(distToStart) = distToStart
+nHitsAtDistFromStart = unlist(lapply(distToStart, function(d) {
+  ## x %in% y returns logical vector with length(x) elements,
+  ## with (x %in% y)[[i]] TRUE if there is some j for which
+  ## x[[i]] == y[[j]] (i.e., x[[i]] can be found somewhere in y)
+  sum((genesForward$start + d) %in% unlist(hitsForward))
+  ## so here we're testing, for each each gene in genesForward,
+  ## whether or not there was a Shine-Dalgarno hit exactly d
+  ## bases from start of the gene (d<0 upstream, d>0 downstream)
+}))
+
+df <- data.frame(distToStart, nHitsAtDistFromStart)
+library(ggplot2)
+ggplot(df, aes(x=distToStart, y= nHitsAtDistFromStart)) + geom_point()
+```
+
+
+
+
+
+
+

@@ -1,0 +1,171 @@
+---
+title: "HW 2"
+author: "Alice Gee"
+date: "9/4/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+1. 
+geometric <- function(tmax) {
+  n = rep(0, tmax+1)
+  n[[1]] = 1
+  for (t in 1:tmax)  {
+    n[[t +1]] = 2 * n[[t]]
+  }
+  names(n) = as.character(0:tmax)
+  return(n)
+}
+
+2. 
+fibonacci <- function(tmax) {
+  n = rep(0, tmax+1)
+  n[[1]] = 0
+  n[[2]] = 1
+  for (t in 2:tmax) {
+    n[[t+1]] = n[t] + n[t-1]
+  }
+  names(n) = as.character(0:tmax)
+  return(n)
+}
+
+3. 
+  A. fib10diff has a length of 10. 
+  B. fib10 has a length of 11. In terms of length, the relationship between fib10 and 
+  fib10diff is that fib10diff is one less than fib10. In terms of function, fib10diff 
+  returns the difference between neighboring values in fib10. 
+  C. Diff takes in an input vector and returns the difference between a value and the 
+  value after it (i.e. n[2] - n[1]). This value gets stored into a new vector (e.g. d) 
+  where d[1] = n[2] - n[1] and d[2] = n[3] - n[2]... until the function reaches the last
+  value. This results in a new vector of the differences between the each value and its 
+  right neighbor, which has a length of 1 less than the input vector. 
+
+4. 
+  A. fib10diffCumul has a length of 10. 
+  B. fib10diff also has a length of 10. In terms of length, the relationship between 
+  fib10diff and fib10diffCumul is that they have the same length. In terms of the function, 
+  fib10diffCumul returns a vector of the same length of fib10diff but outputs a rolling sum 
+  of the values in fib10diff; basically undoing what fib10diff did to fib10. 
+  C. fib10 has a length of 11, while fib10diffCumul has a length of 10. In terms of length, 
+  the relationship between fib10 and fib10diffCumul is that fib10diffCumul has a length of 1
+  less than fib10. It is also notable that fib10diffCumul and fib10 have almost the same 
+  values, except for the first value of n[1] from fib10 (which was 0). As mentioned in part 
+  B, fib10diffCumul undoes fib10diff to return the original values that make up fib10, since
+  the rolling sum is the opposite of the diff function.
+  D. Cumsum takes in an input vector and returns the rolling sum between a value and the
+  value after it. The function starts off by copying the first value of the input 
+  vector. The next value is calculated by adding the current value (stored in the cumsum
+  function) to the next value from the input vector. These calculations occur until the 
+  last value from the input vector is added with the second to last value in the cumsum 
+  vector. The resulting vector is the rolling sum of the input vector, with the same 
+  length. 
+  
+5. 
+  A. whatIsIt has a length of 10. 
+  B. fib10 has a length of 11, while whatIsIt has a length of 10. In terms of length, the 
+  relationship between fib10 and whatIsIt is that whatIsIt has a length of one less than 
+  fib10. In terms of function, whatIsIt returns the quotient (≈ ratio) between each value 
+  and it's right neighbor in fib10 (i.e. n[x+1] / n[x]). 
+  C. laggedRatio takes in an input vector and returns the quotient between a value and 
+  the value after it (i.e. n[2]/n[1]). This value gets stored into a new vector (e.g. d)
+  where d[1] = n[2] / n[1] and d[2] = n[3] / n[2]... until the function reaches the last
+  value. This results in a new vector of the quotients between each value and its right 
+  neigher (essentially the ratio between them), which has a length of 1 less than the 
+  input vector. 
+  D. The latter values of whatIsIt appears to be stabilizing around 1.617-1.619 (≈ 1.618). 
+  
+6. 
+  A. For each of the ten outputted values, we get 1.618034. 
+  B. fibVgeo$geo appears to be a geometric growth, with a constant growth rate of 1.618034. 
+  C. The black and the red line, while there are subtle differenes at the beginning of 
+  the lines, are essentially illustrating the same growth pattern. 
+
+7. This different species, assuming each will reproduce once per time unit, will have a growth rate similar to the one we modeled in question 1. Essentially after each time unit, the population will double in size. This will inevitably grow faster than the fibonacci species, which by adding the two previous population sizes, has an approximate [stablized] growth rate of about 1.618. A growth rate of 2 is larger than a growth rate of 1.618. In fact, by year 29, the population size of this new species will have surpassed the fibonacci species and will continue to outgrow them as time passes. 
+
+
+```{r}
+geometric <- function(tmax) {
+  n = rep(0, tmax+1)
+  n[[1]] = 1      # at time 0, initilize n0 = 1 
+  for (t in 1:tmax)  {
+    n[[t +1]] = 2 * n[[t]]  # growth rate of 2
+  }
+  names(n) = as.character(0:tmax)
+  return(n)
+}
+geometric(10)
+
+cat("\n")
+
+fibonacci <- function(tmax) {
+  n = rep(0, tmax+1)
+  n[[1]] = 0
+  n[[2]] = 1
+  for (t in 2:tmax) {
+    n[[t+1]] = n[t] + n[t-1]
+  }
+  names(n) = as.character(0:tmax)
+  return(n)
+}
+
+fib10 = fibonacci(10)
+fib10diff = diff(fib10)
+fib10
+fib10diff
+
+cat("\n")
+
+fib10diffCumul = cumsum(fib10diff)
+fib10diffCumul
+
+cat("\n")
+
+`%o%` = function(f, g) {
+  composed = function(x) {f(g(x))}
+  return(composed)
+}
+laggedRatio = exp %o% diff %o% log
+whatIsIt = laggedRatio(fib10)
+whatIsIt
+
+goldenRatio = (1 + sqrt(5)) / 2
+fibVgeo = data.frame(
+  t = 0:10,
+  fib = fib10,
+  geo = goldenRatio^(0:10) / sqrt(5)
+)
+fibVgeo
+laggedRatio(fibVgeo$geo)
+
+library(ggplot2); theme_set(theme_bw())
+## first plot fib vs. t:
+gg = ggplot(fibVgeo, aes(x=t, y=fib)) + geom_point() + geom_line()
+## add second line plotting geo vs. t:
+gg = gg + geom_line(aes(y=geo), color="red")
+print(gg)
+
+
+geom <- function(tmax) {
+  n = rep(0, tmax+1)
+  n[[11]] = 1      # at time 0, initilize n0 = 1 
+  for (t in 11:tmax)  {
+    n[[t +1]] = 2 * n[[t]]  # growth rate of 2
+  }
+  names(n) = as.character(0:tmax)
+  return(n)
+}
+
+geom(25)
+fibonacci(25)
+```
+
+
